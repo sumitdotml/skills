@@ -5,6 +5,7 @@ REPO="https://github.com/sumitdotml/skills.git"
 DEST=".claude/skills"
 TMP=$(mktemp -d)
 
+echo "Fetching skills..."
 git clone --depth 1 --quiet "$REPO" "$TMP"
 
 existing=()
@@ -25,4 +26,7 @@ mkdir -p "$DEST"
 cp -r "$TMP/skills/"* "$DEST/"
 rm -rf "$TMP"
 
-echo "Installed skills to $DEST"
+echo "Installed to $DEST:"
+for skill in "$DEST/"*/; do
+  echo "  - $(basename "$skill")"
+done
