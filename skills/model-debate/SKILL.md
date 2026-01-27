@@ -1,3 +1,10 @@
+---
+name: model-debate
+description: Initiate a structured debate between AI models to create an optimal plan. Use when the user wants multi-model convergence planning for interviews, learning curricula, projects, travel, study schedules, or any complex planning task.
+argument-hint: [topic to plan]
+disable-model-invocation: true
+---
+
 # Model Debate: Multi-Model Convergence Planning
 
 You are initiating a structured debate between AI models to create an optimal plan for the user's request. This framework ensures thorough analysis through respectful, critical discourse until models converge on a high-quality solution.
