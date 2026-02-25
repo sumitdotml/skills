@@ -5,6 +5,8 @@ REPO="https://github.com/sumitdotml/skills.git"
 AGENTS_DIR=".agents"
 CLAUDE_LINK=".claude"
 DEST="$AGENTS_DIR/skills"
+HOOKS_DEST="$AGENTS_DIR/hooks"
+SETTINGS_LOCAL="$AGENTS_DIR/settings.local.json"
 ROOT_AGENTS_FILE="AGENTS.md"
 ROOT_MISTAKES_FILE="AGENT_MISTAKES.md"
 ROOT_CLAUDE_FILE="CLAUDE.md"
@@ -14,6 +16,7 @@ echo "Fetching skills..."
 git clone --depth 1 --quiet "$REPO" "$TMP"
 
 SKILLS_SRC="$TMP/skills"
+HOOKS_SRC="$TMP/hooks"
 AGENTS_SRC="$TMP/$ROOT_AGENTS_FILE"
 MISTAKES_SRC="$TMP/$ROOT_MISTAKES_FILE"
 
@@ -121,9 +124,71 @@ if [ "$setup_claude_link" = true ]; then
   ln -sfn "$AGENTS_DIR" "$CLAUDE_LINK"
 fi
 
+# install hooks
+if [ -d "$HOOKS_SRC" ]; then
+  existing_hooks=()
+  for hook in "$HOOKS_SRC/"*.sh; do
+    [ -f "$hook" ] || continue
+    name=$(basename "$hook")
+    [ -f "$HOOKS_DEST/$name" ] && existing_hooks+=("$name")
+  done
+
+  if [ ${#existing_hooks[@]} -gt 0 ]; then
+    echo "Warning: These hooks already exist and will be overwritten:"
+    printf '  - %s\n' "${existing_hooks[@]}"
+    read -p "Continue? [y/N] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "Skipping hooks installation."
+      existing_hooks=("__skip__")
+    fi
+  fi
+
+  if [ "${existing_hooks[0]}" != "__skip__" ]; then
+    mkdir -p "$HOOKS_DEST"
+    cp "$HOOKS_SRC/"*.sh "$HOOKS_DEST/"
+    chmod +x "$HOOKS_DEST/"*.sh
+
+    # wire up settings.local.json with hook entries
+    hook_commands=()
+    for hook in "$HOOKS_DEST/"*.sh; do
+      [ -f "$hook" ] || continue
+      name=$(basename "$hook")
+      hook_commands+=("{\"type\":\"command\",\"command\":\"\$CLAUDE_PROJECT_DIR/.claude/hooks/$name\"}")
+    done
+
+    if [ ${#hook_commands[@]} -gt 0 ]; then
+      hooks_json=$(printf '%s,' "${hook_commands[@]}")
+      hooks_json="[${hooks_json%,}]"
+      hooks_tmp=$(mktemp)
+      echo "$hooks_json" > "$hooks_tmp"
+
+      if [ -f "$SETTINGS_LOCAL" ]; then
+        if grep -q '"hooks"' "$SETTINGS_LOCAL"; then
+          echo "$SETTINGS_LOCAL already has hooks config; keeping existing."
+        else
+          jq --slurpfile h "$hooks_tmp" '.hooks = {"PreToolUse": [{"matcher": "Bash", "hooks": $h[0]}]}' "$SETTINGS_LOCAL" > "$SETTINGS_LOCAL.tmp"
+          mv "$SETTINGS_LOCAL.tmp" "$SETTINGS_LOCAL"
+          echo "Updated $SETTINGS_LOCAL with hooks."
+        fi
+      else
+        echo '{}' | jq --slurpfile h "$hooks_tmp" '.hooks = {"PreToolUse": [{"matcher": "Bash", "hooks": $h[0]}]}' > "$SETTINGS_LOCAL"
+        echo "Created $SETTINGS_LOCAL with hooks."
+      fi
+
+      rm -f "$hooks_tmp"
+    fi
+
+    echo "Installed hooks to $HOOKS_DEST:"
+    for hook in "$HOOKS_DEST/"*.sh; do
+      echo "  - $(basename "$hook")"
+    done
+  fi
+fi
+
 rm -rf "$TMP"
 
-echo "Installed to $DEST:"
+echo "Installed skills to $DEST:"
 for skill in "$DEST/"*/; do
   echo "  - $(basename "$skill")"
 done
