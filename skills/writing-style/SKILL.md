@@ -20,19 +20,19 @@ Personal writing preferences for blog posts and technical documents.
 
 **Only for removable parenthetical phrases.** Not for dramatic effect.
 
-Format: `--` (double hyphen), not `—` (unicode em-dash)
+Format: `---` (triple hyphen), not `—` (unicode em-dash)
 
 Valid:
 
 ```
-I slept for very long last night -- although with no good quality -- and still woke up tired
+I slept for very long last night --- although with no good quality --- and still woke up tired
 ```
 
-Invalid:
+Invalid and STRICTLY PROHIBITED:
 
 ```
-This is important -- and it changes everything
-The results were clear -- success
+This is important --- and it changes everything
+The results were clear --- success
 ```
 
 Test: If you can't remove the content between dashes without losing core meaning, don't use em-dashes.
@@ -41,7 +41,7 @@ Test: If you can't remove the content between dashes without losing core meaning
 
 Avoid these dramatic/superlative constructions:
 
-- "That's not just X, that's Y -- that's Z"
+- "That's not just X, that's Y --- that's Z"
 - "This is the testament to X: that this is Y"
 - "I strive to get better not just for X, but for Y that I want to Z"
 - "This isn't merely X; it's fundamentally Y"
@@ -53,7 +53,7 @@ Avoid these dramatic/superlative constructions:
 - Conversational but technical
 - First-person narrative where appropriate
 - Honest about uncertainties and WIP status
-- Questions-driven structure can be used (pose questions, then answer them - but try to use first-person narrative or a monologue tone)
+- Questions-driven structure can be used (pose questions, then answer them, but try to use first-person narrative or a monologue tone)
 - No excessive validation or superlatives
 - No hedging qualifiers ("quite", "rather", "fairly")
 
