@@ -26,7 +26,13 @@ Create the following files in the current working directory:
 
 Replace `[topic]` with a short, descriptive slug of what's being planned (e.g., `plan-react-learning.md`, `debate-react-learning.md`).
 
-### Step 2: Initial Analysis (Claude's Turn)
+### Step 2: Initial Analysis (Current Model's Turn)
+
+Use the actual participating model names in the debate file.
+
+- Never hardcode example names like `Claude Opus 4.5` or `GPT 5.2` unless those are the real models in the debate.
+- If the exact peer model is not yet known, use neutral placeholders like `Peer Model - Analysis 1` and tell the user to replace them when handing the file off.
+- The first analysis section should always be labeled with the current model's real name.
 
 In the `debate-[topic].md` file, structure your first analysis as:
 
@@ -37,40 +43,49 @@ This document contains a structured debate between AI models to create the optim
 
 ---
 
-## Claude Opus 4.5 - Analysis 1
+## [Current Model Name] - Analysis 1
 
 ### Understanding the Request
+
 [Analyze what the user is trying to achieve]
 
 ### Key Constraints and Considerations
+
 [Identify timeline, resources, prerequisites, potential blockers]
 
 ### Proposed Approach
+
 [Explain the structure and rationale behind your plan]
 
 ### Trade-offs and Decisions Made
+
 [Document decisions that could reasonably go other ways]
 
 ### Potential Weaknesses
+
 [Honestly assess where your plan might fall short]
 
-### Questions for GPT 5.2
+### Questions for [Peer Model Name]
+
 [Specific questions to guide the next model's analysis]
 
 ---
 
-## GPT 5.2 - Analysis 1
-*[Awaiting response]*
+## [Peer Model Name] - Analysis 1
+
+_[Awaiting response]_
 
 ---
 
-## Claude Opus 4.5 - Response 1
-*[To be added after GPT 5.2 analysis]*
+## [Current Model Name] - Response 1
+
+_[To be added after GPT 5.2 analysis]_
 
 ---
 
 ## Convergence Summary
-*[To be completed when models reach consensus]*
+
+_[To be completed when models reach consensus]_
 ```
 
 ### Step 3: Write the Initial Plan
@@ -88,8 +103,8 @@ In `plan-[topic].md`, create a comprehensive, actionable plan based on your anal
 After creating both files, inform the user:
 
 1. Where the files are located
-2. That they should now pass the `debate-[topic].md` file to GPT 5.2 (or another model) for critical analysis
-3. The other model should add their analysis in the "GPT 5.2 - Analysis 1" section
+2. That they should now pass the `debate-[topic].md` file to another model for critical analysis
+3. The other model should add their analysis in the peer-model section using their real model name
 4. The user should then bring that response back to continue the debate
 
 ## Debate Protocol for All Participating Models
@@ -97,17 +112,20 @@ After creating both files, inform the user:
 When any model participates in this debate, they should:
 
 ### Be Critical but Respectful
+
 - Challenge assumptions with evidence
 - Propose alternatives, not just criticism
 - Acknowledge good points from other models
 - Focus on improving the plan, not "winning"
 
 ### Be Specific
+
 - Reference specific sections of the plan
 - Provide concrete examples
 - Quantify trade-offs when possible
 
 ### Address These Dimensions
+
 1. **Completeness**: Are there missing elements?
 2. **Feasibility**: Is this realistic given constraints?
 3. **Prioritization**: Are the most important things emphasized?
@@ -115,6 +133,7 @@ When any model participates in this debate, they should:
 5. **Flexibility**: Does it account for variance?
 
 ### Converge Towards Agreement
+
 - Explicitly state when you agree with another model
 - Propose compromises on disagreements
 - The goal is consensus, not perpetual debate
@@ -154,4 +173,4 @@ This framework works for:
 
 ---
 
-*Begin by asking the user what they'd like to plan if not already specified, then proceed with creating the debate framework.*
+_Begin by asking the user what they'd like to plan if not already specified, then proceed with creating the debate framework._
