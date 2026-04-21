@@ -11,6 +11,19 @@ ROOT_AGENTS_FILE="AGENTS.md"
 ROOT_MISTAKES_FILE="AGENT_MISTAKES.md"
 ROOT_CLAUDE_FILE="CLAUDE.md"
 TMP=$(mktemp -d)
+trap 'rm -rf "$TMP"' EXIT
+
+ask() {
+  local prompt="$1" default="${2:-N}" reply
+  if { : </dev/tty; } 2>/dev/null; then
+    read -p "$prompt" -n 1 -r reply </dev/tty || reply="$default"
+    echo
+  else
+    reply="$default"
+    echo "$prompt [non-interactive, defaulting to $default]"
+  fi
+  [[ $reply =~ ^[Yy]$ ]]
+}
 
 echo "Fetching skills..."
 git clone --depth 1 --quiet "$REPO" "$TMP"
@@ -29,9 +42,10 @@ done
 if [ ${#existing[@]} -gt 0 ]; then
   echo "Warning: These skills already exist and will be overwritten:"
   printf '  - %s\n' "${existing[@]}"
-  read -p "Continue? [y/N] " -n 1 -r
-  echo
-  [[ ! $REPLY =~ ^[Yy]$ ]] && { rm -rf "$TMP"; echo "Aborted."; exit 1; }
+  if ! ask "Continue? [y/N] "; then
+    echo "Aborted."
+    exit 1
+  fi
 fi
 
 mkdir -p "$DEST"
@@ -44,9 +58,7 @@ if [ -f "$AGENTS_SRC" ]; then
       echo "$ROOT_AGENTS_FILE already has ${guardrails_header#\#\# } section; keeping existing file."
     else
       echo "Warning: $ROOT_AGENTS_FILE already exists."
-      read -p "Append quality guardrails section to $ROOT_AGENTS_FILE? [y/N] " -n 1 -r
-      echo
-      if [[ $REPLY =~ ^[Yy]$ ]]; then
+      if ask "Append quality guardrails section to $ROOT_AGENTS_FILE? [y/N] "; then
         printf "\n" >> "$ROOT_AGENTS_FILE"
         cat "$AGENTS_SRC" >> "$ROOT_AGENTS_FILE"
         echo "Updated $ROOT_AGENTS_FILE"
@@ -78,9 +90,7 @@ if [ ! -e "$ROOT_AGENTS_FILE" ] && [ ! -L "$ROOT_AGENTS_FILE" ]; then
 else
   if [ -e "$ROOT_CLAUDE_FILE" ] && [ ! -L "$ROOT_CLAUDE_FILE" ]; then
     echo "Warning: $ROOT_CLAUDE_FILE exists and is not a symlink."
-    read -p "Replace it with a symlink to $ROOT_AGENTS_FILE? [y/N] " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if ask "Replace it with a symlink to $ROOT_AGENTS_FILE? [y/N] "; then
       rm -rf "$ROOT_CLAUDE_FILE"
       ln -s "$ROOT_AGENTS_FILE" "$ROOT_CLAUDE_FILE"
       echo "Created $ROOT_CLAUDE_FILE -> $ROOT_AGENTS_FILE"
@@ -91,9 +101,7 @@ else
     current_target=$(readlink "$ROOT_CLAUDE_FILE")
     if [ "$current_target" != "$ROOT_AGENTS_FILE" ]; then
       echo "Warning: $ROOT_CLAUDE_FILE points to $current_target."
-      read -p "Retarget it to $ROOT_AGENTS_FILE? [y/N] " -n 1 -r
-      echo
-      if [[ $REPLY =~ ^[Yy]$ ]]; then
+      if ask "Retarget it to $ROOT_AGENTS_FILE? [y/N] "; then
         ln -sfn "$ROOT_AGENTS_FILE" "$ROOT_CLAUDE_FILE"
         echo "Updated $ROOT_CLAUDE_FILE -> $ROOT_AGENTS_FILE"
       else
@@ -109,9 +117,7 @@ fi
 setup_claude_link=true
 if [ -e "$CLAUDE_LINK" ] && [ ! -L "$CLAUDE_LINK" ]; then
   echo "Warning: $CLAUDE_LINK exists and is not a symlink."
-  read -p "Replace it with a symlink to $AGENTS_DIR? [y/N] " -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
+  if ask "Replace it with a symlink to $AGENTS_DIR? [y/N] "; then
     rm -rf "$CLAUDE_LINK"
     echo "Removed existing $CLAUDE_LINK"
   else
@@ -136,9 +142,7 @@ if [ -d "$HOOKS_SRC" ]; then
   if [ ${#existing_hooks[@]} -gt 0 ]; then
     echo "Warning: These hooks already exist and will be overwritten:"
     printf '  - %s\n' "${existing_hooks[@]}"
-    read -p "Continue? [y/N] " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    if ! ask "Continue? [y/N] "; then
       echo "Skipping hooks installation."
       existing_hooks=("__skip__")
     fi
@@ -164,7 +168,7 @@ if [ -d "$HOOKS_SRC" ]; then
       echo "$hooks_json" > "$hooks_tmp"
 
       if [ -f "$SETTINGS_LOCAL" ]; then
-        if grep -q '"hooks"' "$SETTINGS_LOCAL"; then
+        if jq -e 'has("hooks")' "$SETTINGS_LOCAL" >/dev/null 2>&1; then
           echo "$SETTINGS_LOCAL already has hooks config; keeping existing."
         else
           jq --slurpfile h "$hooks_tmp" '.hooks = {"PreToolUse": [{"matcher": "Bash", "hooks": $h[0]}]}' "$SETTINGS_LOCAL" > "$SETTINGS_LOCAL.tmp"
@@ -185,8 +189,6 @@ if [ -d "$HOOKS_SRC" ]; then
     done
   fi
 fi
-
-rm -rf "$TMP"
 
 echo "Installed skills to $DEST:"
 for skill in "$DEST/"*/; do
