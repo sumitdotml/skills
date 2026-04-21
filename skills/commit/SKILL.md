@@ -26,7 +26,8 @@ Examples:
 3. Group related changes into logical commits
 4. For each commit:
    - Stage only related files (avoid `git add -A`)
-     e commit message: - Short title (< 80 chars) - If meaningful changes: 2-3 bullet points - If minor changes: single line, no bullets
+   - Default format: single-line message, < 80 chars, no body. Use this unless the user explicitly asks for multi-line or bullets.
+   - Multi-line format (title + 2-3 bullets) only when the user explicitly asks (e.g. "multi-line commit", "with bullets", "detailed commit message").
 5. After committing, if not on main, ask if user wants to push
 
 ## Important
